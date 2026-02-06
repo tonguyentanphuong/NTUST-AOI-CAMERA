@@ -1,0 +1,145 @@
+; Anycubic i3 Mega
+; Camera FOV: 60x60mm
+; Limits: X <= 160, Y <= 190
+; Start position kept the same: X0 Y70
+;
+; Coverage region in machine coords:
+;   X: 0 -> 160  (span 160)
+;   Y: 70 -> 190 (span 120)
+;
+; Even spacing with >=30% overlap:
+;   StepX = 40mm  -> overlap = 1 - 40/60 = 33.33%
+;   StepY = 40mm  -> overlap = 33.33%
+;
+; X positions: 0, 40, 80, 120, 160
+; Y positions: 70, 110, 150, 190
+;
+; Capture logic: move -> M400 -> G4 P100 -> M118 @CAPTURE
+; NO EXTRUSION
+
+G21
+G90
+M82
+
+G28
+G1 Z195 F3000
+
+; ============================
+; ROW 1 (Y=70)
+; ============================
+G1 X0 Y70 F6000
+M118 @POS START
+
+M400
+G4 P100
+M118 @CAPTURE X0 Y70
+
+G1 X40 F6000
+M400
+G4 P100
+M118 @CAPTURE X40 Y70
+
+G1 X80 F6000
+M400
+G4 P100
+M118 @CAPTURE X80 Y70
+
+G1 X120 F6000
+M400
+G4 P100
+M118 @CAPTURE X120 Y70
+
+G1 X160 F6000
+M400
+G4 P100
+M118 @CAPTURE X160 Y70
+
+; ============================
+; ROW 2 (Y=110)
+; ============================
+G1 X0 Y110 F6000
+M400
+G4 P100
+M118 @CAPTURE X0 Y110
+
+G1 X40 F6000
+M400
+G4 P100
+M118 @CAPTURE X40 Y110
+
+G1 X80 F6000
+M400
+G4 P100
+M118 @CAPTURE X80 Y110
+
+G1 X120 F6000
+M400
+G4 P100
+M118 @CAPTURE X120 Y110
+
+G1 X160 F6000
+M400
+G4 P100
+M118 @CAPTURE X160 Y110
+
+; ============================
+; ROW 3 (Y=150)
+; ============================
+G1 X0 Y150 F6000
+M400
+G4 P100
+M118 @CAPTURE X0 Y150
+
+G1 X40 F6000
+M400
+G4 P100
+M118 @CAPTURE X40 Y150
+
+G1 X80 F6000
+M400
+G4 P100
+M118 @CAPTURE X80 Y150
+
+G1 X120 F6000
+M400
+G4 P100
+M118 @CAPTURE X120 Y150
+
+G1 X160 F6000
+M400
+G4 P100
+M118 @CAPTURE X160 Y150
+
+; ============================
+; ROW 4 (Y=190)
+; ============================
+G1 X0 Y190 F6000
+M400
+G4 P100
+M118 @CAPTURE X0 Y190
+
+G1 X40 F6000
+M400
+G4 P100
+M118 @CAPTURE X40 Y190
+
+G1 X80 F6000
+M400
+G4 P100
+M118 @CAPTURE X80 Y190
+
+G1 X120 F6000
+M400
+G4 P100
+M118 @CAPTURE X120 Y190
+
+G1 X160 F6000
+M400
+G4 P100
+M118 @CAPTURE X160 Y190
+
+; ============================
+; END
+; ============================
+G1 X0 Y0 F6000
+; M84

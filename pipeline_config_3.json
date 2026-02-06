@@ -1,0 +1,182 @@
+{
+    "Creation": "2026-02-03T03:43:13Z",
+    "Modules": [
+        {
+            "Data": {},
+            "Type": "Unpack"
+        },
+        {
+            "Data": {
+                "Enabled": false,
+                "HotpixelList": [],
+                "Version": 1
+            },
+            "Type": "HotpixelCorrection"
+        },
+        {
+            "Data": {
+                "DefaultMode": "BinningAverage",
+                "Enabled": true,
+                "Mode": "BinningAverage",
+                "Version": 1,
+                "X": 1,
+                "Y": 1
+            },
+            "Type": "Binning"
+        },
+        {
+            "Data": {
+                "DefaultMode": "Decimation",
+                "Enabled": true,
+                "Mode": "Decimation",
+                "Version": 1,
+                "X": 1,
+                "Y": 1
+            },
+            "Type": "Decimation"
+        },
+        {
+            "Data": {
+                "Mirror": {
+                    "Enabled": true,
+                    "LeftRight": false,
+                    "UpDown": false
+                },
+                "Rotation": {
+                    "Angle": 0,
+                    "Enabled": true
+                },
+                "Version": 1
+            },
+            "Type": "TransformationModule"
+        },
+        {
+            "Data": {
+                "BlueGain": 1.0,
+                "Enabled": false,
+                "GreenGain": 1.0,
+                "MasterGain": 1.0,
+                "RedGain": 1.0,
+                "Version": 1
+            },
+            "Type": "Gain"
+        },
+        {
+            "Data": {
+                "ChannelLayout": "BGRA",
+                "ConversionPolicy": "BayerAndMono",
+                "Enabled": true,
+                "Version": 1
+            },
+            "Type": "Debayer"
+        },
+        {
+            "Data": {
+                "ColorCorrection": {
+                    "Enabled": true,
+                    "Matrix": [
+                        1.609375,
+                        -0.46484375,
+                        -0.140625,
+                        -0.44921875,
+                        1.9375,
+                        -0.48828125,
+                        0.0859375,
+                        -0.60546875,
+                        1.51953125
+                    ]
+                },
+                "Saturation": {
+                    "Enabled": true,
+                    "Value": 1.0
+                },
+                "Version": 1
+            },
+            "Type": "ColorMatrixTransformation"
+        },
+        {
+            "Data": {
+                "BasicAutoBrightness": {
+                    "AutoPercentile": 10.000000149011612,
+                    "AutoTarget": 110,
+                    "AutoTolerance": 3,
+                    "BrightnessAlgorithm": "Median",
+                    "ComponentExposure": {
+                        "Limit": {
+                            "Max": 1.7976931348623157e+308,
+                            "Min": 0.0
+                        },
+                        "Mode": "Continuous"
+                    },
+                    "ComponentGain": {
+                        "Limit": {
+                            "Max": 15.848933219909668,
+                            "Min": 1.0
+                        },
+                        "Mode": "Off"
+                    },
+                    "Policy": "ExposureOnly",
+                    "Roi": {
+                        "Height": 3500,
+                        "Width": 3500,
+                        "X": 0,
+                        "Y": 0
+                    },
+                    "SkipFrames": 2
+                },
+                "BasicAutoWhiteBalance": {
+                    "Mode": "Continuous",
+                    "Roi": {
+                        "Height": 3500,
+                        "Width": 3500,
+                        "X": 0,
+                        "Y": 0
+                    },
+                    "SkipFrames": 2
+                },
+                "Enabled": true,
+                "Version": 1
+            },
+            "Type": "BasicAutoFeatures"
+        },
+        {
+            "Data": {
+                "Enabled": false,
+                "Version": 1
+            },
+            "Type": "MonoConversion"
+        },
+        {
+            "Data": {
+                "Enabled": false,
+                "Level": 0,
+                "Version": 1
+            },
+            "Type": "Sharpening"
+        },
+        {
+            "Data": {
+                "DigitalBlack": {
+                    "Enabled": true,
+                    "Value": 0.040449999272823334
+                },
+                "Gamma": {
+                    "Enabled": true,
+                    "Value": 2.200000047683716
+                },
+                "Version": 1
+            },
+            "Type": "ToneCurveCorrection"
+        },
+        {
+            "Data": {
+                "Enabled": true,
+                "OutputPixelFormat": "BGRa8",
+                "Version": 1
+            },
+            "Type": "PixelFormatConversion"
+        }
+    ],
+    "Type": "DefaultPipeline",
+    "Version": 1
+}
