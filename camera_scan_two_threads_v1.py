@@ -511,7 +511,7 @@ def main():
     cset_path = "camera_config_3.cset"
 
     # Optional settle delay after position confirmed (firmware already does M400/G4 in your G-code)
-    CAPTURE_DELAY_SEC = 0.0
+    CAPTURE_DELAY_SEC = 0.5
 
     # Stabilize after first M118 @POS START
     STABILIZE_DISCARD_FRAMES = 20
@@ -535,7 +535,7 @@ def main():
     ids_peak.Library.Initialize()
     ids_peak_afl.Library.Init()
 
-    ser = serial.Serial("COM7", 250000, timeout=0.5, write_timeout=2)
+    ser = serial.Serial("COM5", 250000, timeout=0.5, write_timeout=2)
     ser.write(b"\r\n\r\n")
     time.sleep(2)
     ser.reset_input_buffer()
@@ -572,6 +572,14 @@ def main():
             timeout_ms=timeout_ms,
         )
         worker.start()
+
+        # ---- ONE-TIME HOME ----
+        print("\n" + "!"*40)
+        print("FIRST RUN: Homing printer... Please ensure bed is clear.")
+        if not send_cmd_and_wait_ok(ser, "G28", logger, timeout=60):
+            log_print(logger, "Initial homing failed. Exiting.", "error")
+            return
+        print("!"*40 + "\n")
 
         while True:
             # ---- Metadata Input ----
