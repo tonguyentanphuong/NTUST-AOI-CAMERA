@@ -303,7 +303,7 @@ class CameraScannerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("AOI Camera Scanner UI")
-        self.root.geometry("750x650")
+        self.root.geometry("800x750")
         
         # State variables
         self.scan_state = "IDLE"  # IDLE, RUNNING, PAUSED
@@ -348,6 +348,27 @@ class CameraScannerApp:
 
         config_frame.columnconfigure(1, weight=1)
 
+        # Manual Jog Frame
+        jog_frame = ttk.LabelFrame(self.root, text="Manual Jog (XY)", padding=10)
+        jog_frame.pack(fill="x", padx=10, pady=5)
+
+        ttk.Label(jog_frame, text="Step (mm):").pack(side="left", padx=5)
+        self.jog_step_var = tk.StringVar(value="10")
+        step_cb = ttk.Combobox(jog_frame, textvariable=self.jog_step_var, values=["0.1", "1", "5", "10", "50"], width=5, state="readonly")
+        step_cb.pack(side="left", padx=5)
+
+        self.btn_x_neg = ttk.Button(jog_frame, text="X -", command=lambda: self.gui_jog("X", -1), width=5)
+        self.btn_x_neg.pack(side="left", padx=10)
+
+        self.btn_x_pos = ttk.Button(jog_frame, text="X +", command=lambda: self.gui_jog("X", 1), width=5)
+        self.btn_x_pos.pack(side="left", padx=2)
+
+        self.btn_y_pos = ttk.Button(jog_frame, text="Y +", command=lambda: self.gui_jog("Y", 1), width=5)
+        self.btn_y_pos.pack(side="left", padx=20)
+
+        self.btn_y_neg = ttk.Button(jog_frame, text="Y -", command=lambda: self.gui_jog("Y", -1), width=5)
+        self.btn_y_neg.pack(side="left", padx=2)
+
         # Control Panel Frame
         ctrl_frame = ttk.LabelFrame(self.root, text="Controls", padding=10)
         ctrl_frame.pack(fill="x", padx=10, pady=5)
@@ -358,7 +379,7 @@ class CameraScannerApp:
         self.start_btn = ttk.Button(ctrl_frame, text="Start Scan", command=self.gui_start_pause_continue)
         self.start_btn.pack(side="left", expand=True, fill="x", padx=5)
 
-        self.stop_btn = ttk.Button(ctrl_frame, text="EMERGENCY STOP", command=self.gui_emergency_stop)
+        self.stop_btn = ttk.Button(ctrl_frame, text="STOP", command=self.gui_emergency_stop)
         self.stop_btn.pack(side="left", expand=True, fill="x", padx=5)
         
         # Styling for buttons
@@ -421,19 +442,57 @@ class CameraScannerApp:
             log_print(self.logger, "Cannot home while scan is running or hardware is offline.", "warning")
             return
             
+        self.abort_flag = False
+            
         def _home():
-            self.home_btn.configure(state="disabled")
-            self.start_btn.configure(state="disabled")
+            self.root.after(0, lambda: self.home_btn.configure(state="disabled"))
+            self.root.after(0, lambda: self.start_btn.configure(state="disabled"))
             log_print(self.logger, "Homing printer... Please wait.")
             success = send_cmd_and_wait_ok(self.ser, "G28", self.logger, self.check_abort, timeout=60)
             if success:
                 log_print(self.logger, "Printer homed successfully.")
+                log_print(self.logger, "Moving to start position (X0 Y70 Z195)...")
+                send_cmd_and_wait_ok(self.ser, "G1 Z195 F3000", self.logger, self.check_abort)
+                send_cmd_and_wait_ok(self.ser, "G1 X0 Y70 F6000", self.logger, self.check_abort)
             else:
                 log_print(self.logger, "Homing failed or aborted.", "error")
-            self.home_btn.configure(state="normal")
-            self.start_btn.configure(state="normal")
+            self.root.after(0, lambda: self.home_btn.configure(state="normal"))
+            self.root.after(0, lambda: self.start_btn.configure(state="normal"))
             
         threading.Thread(target=_home, daemon=True).start()
+
+    def gui_jog(self, axis, direction):
+        if not self.hw_initialized or self.scan_state != "IDLE":
+            log_print(self.logger, "Cannot jog while scan is running or hardware is offline.", "warning")
+            return
+            
+        try:
+            step = float(self.jog_step_var.get())
+        except ValueError:
+            step = 10.0
+            
+        val = step * direction
+        
+        self.abort_flag = False
+        
+        def _jog():
+            self.root.after(0, lambda: self.home_btn.configure(state="disabled"))
+            self.root.after(0, lambda: self.start_btn.configure(state="disabled"))
+            
+            # Use relative positioning (G91) to jog, then switch back to absolute (G90)
+            cmd1 = "G91"
+            cmd2 = f"G1 {axis}{val} F6000"
+            cmd3 = "G90"
+            
+            log_print(self.logger, f"Jogging {axis} by {val}mm...")
+            send_cmd_and_wait_ok(self.ser, cmd1, self.logger, self.check_abort)
+            send_cmd_and_wait_ok(self.ser, cmd2, self.logger, self.check_abort)
+            send_cmd_and_wait_ok(self.ser, cmd3, self.logger, self.check_abort)
+            
+            self.root.after(0, lambda: self.home_btn.configure(state="normal"))
+            self.root.after(0, lambda: self.start_btn.configure(state="normal"))
+            
+        threading.Thread(target=_jog, daemon=True).start()
 
     def gui_start_pause_continue(self):
         if not self.hw_initialized:
@@ -467,17 +526,17 @@ class CameraScannerApp:
             self.start_btn.configure(text="Pause")
             log_print(self.logger, "Resuming scan...")
 
-    def gui_emergency_stop(self):
-        if self.scan_state == "IDLE":
-            return
-            
-        log_print(self.logger, "!!! EMERGENCY STOP REQUESTED !!!", "error")
-        self.abort_flag = True
-        
-        # Reset state back to IDLE
+    def gui_finish_scan(self):
         self.scan_state = "IDLE"
         self.start_btn.configure(text="Start Scan")
         self.home_btn.configure(state="normal")
+
+    def gui_emergency_stop(self):
+        log_print(self.logger, "!!! STOP REQUESTED !!!", "error")
+        self.abort_flag = True
+        
+        # Reset state back to IDLE
+        self.gui_finish_scan()
         
         # Send instant stop to printer if possible (M410 clears buffer)
         try:
@@ -562,6 +621,12 @@ class CameraScannerApp:
                                 if self.check_abort(): break
                                 time.sleep(0.1)
 
+                            # If paused mid-move, wait here before capturing!
+                            while self.scan_state == "PAUSED" and not self.check_abort():
+                                time.sleep(0.1)
+
+                            if self.check_abort(): break
+
                             row_dir = current_board_dir / f"row_{row}"
                             out_path = row_dir / f"img_{index}.png"
                             if self.camera_worker.save_latest(out_path):
@@ -582,8 +647,8 @@ class CameraScannerApp:
             import traceback
             log_print(self.logger, traceback.format_exc(), "error")
         finally:
-            if self.scan_state == "RUNNING" or self.scan_state == "PAUSED":
-                self.root.after(0, self.gui_emergency_stop) # reset UI state
+            if not self.abort_flag:
+                self.root.after(0, self.gui_finish_scan)
 
     def on_close(self):
         log_print(self.logger, "Shutting down application...")

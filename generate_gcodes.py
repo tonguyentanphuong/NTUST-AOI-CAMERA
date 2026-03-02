@@ -26,7 +26,7 @@ def generate_gcode(filename, x_points, y_points):
         f.write("; ============================\n")
         f.write("; END\n")
         f.write("; ============================\n")
-        f.write("G1 X0 Y0 F6000\n")
+        f.write("G1 X0 Y70 F6000\n")
 
 if __name__ == '__main__':
     # A1
