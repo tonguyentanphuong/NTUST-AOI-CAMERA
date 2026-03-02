@@ -584,6 +584,22 @@ def main():
         while True:
             # ---- Metadata Input ----
             print("\n" + "="*40)
+            
+            board_model = input("Enter Board Model (e.g. A0, A1, NEWLED BOARD A0) or 'q' to exit: ").strip()
+            if board_model.lower() == 'q':
+                break
+                
+            model_upper = board_model.upper()
+            if model_upper == "A0":
+                gcode_filename = "S3.gcode"
+            elif model_upper == "A1":
+                gcode_filename = "A1.gcode"
+            elif model_upper == "NEWLED BOARD A0":
+                gcode_filename = "NEWLED BOARD A0.gcode"
+            else:
+                print(f"Unknown model: {board_model}. Defaulting to A0 (S3.gcode).")
+                gcode_filename = "S3.gcode"
+                
             board_name = input("Enter Board Name (e.g. 1-1) or 'q' to exit: ").strip()
             if board_name.lower() == 'q':
                 break
@@ -592,8 +608,8 @@ def main():
             if not board_side:
                 board_side = "Unknown"
 
-            # Setup directory structure: captures/name/side
-            current_board_dir = out_dir / board_name / board_side
+            # Setup directory structure: captures/model/name/side
+            current_board_dir = out_dir / board_model / board_name / board_side
             current_board_dir.mkdir(parents=True, exist_ok=True)
             
             # Reset counters for new board
@@ -602,10 +618,14 @@ def main():
             last_x = None
             pos_start_seen = False
 
-            log_print(logger, f"Starting scan for Board: {board_name}, Side: {board_side}")
-            log_print(logger, f"Running G-code...")
+            log_print(logger, f"Starting scan for Model: {board_model}, Board: {board_name}, Side: {board_side}")
+            log_print(logger, f"Running G-code: {gcode_filename}...")
 
-            gcode_path = Path("S3.gcode")
+            gcode_path = Path(gcode_filename)
+            if not gcode_path.exists():
+                log_print(logger, f"Error: {gcode_filename} not found!", "error")
+                continue
+                
             with gcode_path.open("r", encoding="utf-8", errors="ignore") as f:
                 for raw in f:
                     cmd = raw.split(";", 1)[0].strip()
